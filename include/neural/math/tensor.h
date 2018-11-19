@@ -81,6 +81,12 @@ public:
     // Set value at idx
     void SetAt(const std::vector<size_t>& a_idx, float a_val);
 
+    // Sets a row in a matrix to values in a row tensor
+    void SetRow(size_t a_row, const TTensorPtr& a_tensor);
+
+    // Get a row from a matrix
+    TTensorPtr GetRow(size_t a_row) const;
+
     // Get maximum value from tensor
     float MaxVal() const;
 

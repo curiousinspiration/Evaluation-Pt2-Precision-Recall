@@ -18,7 +18,7 @@ public:
 
     // Implement these functions for your dataloader
     virtual size_t DataLength() const = 0;
-    virtual void DataAt(
+    virtual bool DataAt(
         size_t i,
         TMutableTensorPtr& a_outInput,
         TMutableTensorPtr& a_outOutput) const = 0;

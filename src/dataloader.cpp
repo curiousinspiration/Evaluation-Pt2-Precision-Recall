@@ -1,9 +1,8 @@
 /*
- * ADataloader Implementation
+ * Dataloader Implementation
  */
 
 #include "neural/data/dataloader.h"
-#include "neural/math/math.h"
 
 #include <glog/logging.h>
 
@@ -15,14 +14,14 @@ using namespace std;
 namespace neural
 {
 
-ADataloader::ADataloader(bool a_shouldRandomize)
+Dataloader::Dataloader(bool a_shouldRandomize)
     : m_shouldRandomize(a_shouldRandomize)
     , m_numData(0)
     , m_currentIdx(0)
 {
 }
 
-void ADataloader::GetNextBatch(
+void Dataloader::GetNextBatch(
     TMutableTensorPtr& a_outInput,
     TMutableTensorPtr& a_outOutput,
     size_t a_batchSize)
@@ -44,7 +43,7 @@ void ADataloader::GetNextBatch(
         }
     }
 
-    LOG(INFO) << "Dataloader getting batch of size " << a_batchSize << endl;
+    // LOG(INFO) << "Dataloader getting batch of size " << a_batchSize << endl;
     if (m_currentIdx >= m_numData)
     {
         LOG(INFO) << "Dataloader randomizing data indices..." << endl;
@@ -83,46 +82,11 @@ void ADataloader::GetNextBatch(
         ++m_currentIdx;
     }
 
-    /*
-    bool l_haveInitializedIO = false;
-    for (int i = 0; i < a_batchSize; ++i)
-    {
-        if (m_currentIdx >= m_numData)
-        {
-            std::random_shuffle(m_indices.begin(), m_indices.end());
-            m_currentIdx = 0;
-        }
-
-        size_t l_dataIdx = m_indices.at(m_currentIdx);
-
-        TMutableTensorPtr l_input, l_output;
-        // Populate data at index
-        DataAt(l_dataIdx, l_input, l_output);
-
-        if (!l_haveInitializedIO)
-        {
-            a_outInput = l_input;
-            a_outOutput = l_output;
-            l_haveInitializedIO = true;
-            LOG(INFO) << "Got first input: " << a_outInput->ShapeStr()
-                      << " output: " << a_outOutput->ShapeStr() << endl;
-        }
-        else
-        {
-            a_outInput = Math::CatMutable(a_outInput, l_input);
-            a_outOutput = Math::CatMutable(a_outOutput, l_output);
-            LOG(INFO) << "Concatenated input: " << a_outInput->ShapeStr()
-                      << " output: " << a_outOutput->ShapeStr() << endl;
-        }
-
-        ++m_currentIdx;
-    }
-    */
-    LOG(INFO) << "GOT BATCH input: " << a_outInput->ShapeStr()
-              << " output: " << a_outOutput->ShapeStr() << endl;
+    // LOG(INFO) << "GOT BATCH input: " << a_outInput->ShapeStr()
+    //           << " output: " << a_outOutput->ShapeStr() << endl;
 }
 
-size_t ADataloader::GetNumBatches(size_t a_batchSize) const
+size_t Dataloader::GetNumBatches(size_t a_batchSize) const
 {
     return DataLength() / a_batchSize;
 }

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "neural/data/dataloader.h"
 #include "neural/math/tensor.h"
 
 #include <string>
@@ -11,7 +12,7 @@
 namespace neural
 {
 
-class MNISTDataloader
+class MNISTDataloader : public Dataloader
 {
 public:
     MNISTDataloader(
@@ -19,13 +20,13 @@ public:
         bool a_isTrain = true);
 
     // Total number of examples
-    size_t DataLength() const;
+    virtual size_t DataLength() const override;
 
     // Get specific example
-    bool DataAt(
+    virtual bool DataAt(
         size_t i,
         TMutableTensorPtr& a_outInput,
-        TMutableTensorPtr& a_outOutput) const;
+        TMutableTensorPtr& a_outOutput) const override;
 
 private:
     // Total number of examples

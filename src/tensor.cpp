@@ -4,6 +4,8 @@
 
 #include "neural/math/tensor.h"
 
+#include <glog/logging.h>
+
 #include <sstream>
 #include <chrono>
 #include <random>
@@ -259,6 +261,60 @@ bool Tensor::HasSameShape(const TTensorPtr& a_other) const
     }
 
     return true;
+}
+
+void Tensor::SetRow(size_t a_row, const TTensorPtr& a_tensor)
+{
+    if (m_shape.size() != 2)
+    {
+        throw("Tensor::SetRow cannot call set row on non-matrix tensor");
+    }
+
+    if (a_tensor->Shape().at(1) != m_shape.at(1))
+    {
+        throw("Tensor::SetRow tensor not correct size");
+    }
+
+    size_t l_offset = a_row * m_shape.at(1);
+    size_t l_end = l_offset+a_tensor->Shape().at(1);
+
+    // LOG(INFO) << "Setting row " << a_row << " for shape " << ShapeStr() << " with tensor " << a_tensor->ShapeStr() << " => " << l_offset << "," << l_end << endl;
+    for (size_t i = l_offset; i < l_end; ++i)
+    {
+        size_t l_idx = i-l_offset;
+        // LOG(INFO) << "i: " << i << " offset: " << l_offset << " l_idx: " << l_idx << endl;
+        m_data.at(i) = a_tensor->Data().at(l_idx);
+    }
+}
+
+TTensorPtr Tensor::GetRow(size_t a_row) const
+{
+    if (m_shape.size() != 2)
+    {
+        string l_error = "Tensor::GetRow cannot call set row on non-matrix tensor";
+        LOG(ERROR) << l_error << endl;
+        throw(l_error);
+    }
+
+    if (a_row >= m_shape.at(0))
+    {
+        stringstream l_ss;
+        l_ss << "Tensor::GetRow " << a_row << " >= " << m_shape.at(0) << endl;;
+        LOG(ERROR) << l_ss.str() << endl;
+        throw(l_ss.str());
+    }
+
+    TMutableTensorPtr l_row = Tensor::New({1, m_shape.at(1)});
+
+    size_t l_offset = a_row * m_shape.at(1);
+    size_t l_end = l_offset+m_shape.at(1);
+
+    for (size_t i = l_offset; i < l_end; ++i)
+    {
+        size_t l_idx = (i - l_offset);
+        l_row->MutableData().at(l_idx) =  m_data.at(i);
+    }
+    return l_row;
 }
 
 } // namespace neural
