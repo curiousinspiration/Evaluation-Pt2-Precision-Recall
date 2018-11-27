@@ -43,7 +43,7 @@ void Dataloader::GetNextBatch(
         }
     }
 
-    // LOG(INFO) << "Dataloader getting batch of size " << a_batchSize << endl;
+    // If our current index pointer is > data length, reshuffle and set to 0
     if (m_currentIdx >= m_numData)
     {
         LOG(INFO) << "Dataloader randomizing data indices..." << endl;
@@ -66,6 +66,7 @@ void Dataloader::GetNextBatch(
 
     for (int i = 1; i < a_batchSize; ++i)
     {
+        // could go over m_numData here
         if (m_currentIdx >= m_numData)
         {
             LOG(INFO) << "Dataloader randomizing data indices..." << endl;
@@ -81,9 +82,6 @@ void Dataloader::GetNextBatch(
         a_outOutput->SetRow(i, l_output);
         ++m_currentIdx;
     }
-
-    // LOG(INFO) << "GOT BATCH input: " << a_outInput->ShapeStr()
-    //           << " output: " << a_outOutput->ShapeStr() << endl;
 }
 
 size_t Dataloader::GetNumBatches(size_t a_batchSize) const

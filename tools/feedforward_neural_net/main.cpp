@@ -36,10 +36,10 @@ float CalcAccuracy(
     MNISTDataloader& a_testDataloader,
     size_t a_batchSize)
 {
-    float l_numCorrect = 0.0;
-    float l_numTotal = 0.0;
-    size_t l_totalIters = a_testDataloader.GetNumBatches(a_batchSize);
-    for (size_t i = 0; i < l_totalIters; ++i)
+    float numCorrect = 0.0;
+    float numTotal = 0.0;
+    size_t totalIters = a_testDataloader.GetNumBatches(a_batchSize);
+    for (size_t i = 0; i < totalIters; ++i)
     {
         TMutableTensorPtr input, target;
         a_testDataloader.GetNextBatch(input, target, a_batchSize);
@@ -56,19 +56,19 @@ float CalcAccuracy(
             size_t predVal = probs->GetRow(j)->MaxIdx();
             if (predVal == targetVal)
             {
-                ++l_numCorrect;
+                ++numCorrect;
             }
-            ++l_numTotal;
+            ++numTotal;
         }
 
-        if (i % 1000 == 0)
+        if (i % 100 == 0)
         {
             LOG(INFO) << "Processing test set... " << i << endl;
         }
     }
 
-    float l_accuracy = (l_numCorrect / l_numTotal) * 100;
-    LOG(INFO) << "Test accuracy = " << l_numCorrect << "/" << l_numTotal 
+    float l_accuracy = (numCorrect / numTotal) * 100;
+    LOG(INFO) << "Test accuracy = " << numCorrect << "/" << numTotal 
               << " = " << l_accuracy << "%" << endl;
     return l_accuracy;
 }
@@ -88,8 +88,8 @@ int main(int argc, char const *argv[])
     // Non-linear activation
     ReLULayer activationLayer;
     
-    // second linear layer is 300x1
-    // 300 hidden units, 1 output
+    // second linear layer is 300x10
+    // 300 hidden units, 10 outputs
     LinearLayer secondLinearLayer(Tensor::Random({300, 10}, -0.01f, 0.01f));
 
     // Convert outputs to probabilities
@@ -100,20 +100,20 @@ int main(int argc, char const *argv[])
     CrossEntropyLoss loss;
 
     // Training loop
-    float learningRate = 0.0001;
+    float learningRate = 0.0003;
     size_t numEpochs = 100;
-    size_t batchSize = 16;
+    size_t batchSize = 8;
+    float lastTestAcc = 0.0;
 
-    size_t l_totalIters = l_trainDataloader.GetNumBatches(batchSize);
+    size_t totalIters = l_trainDataloader.GetNumBatches(batchSize);
     for (size_t i = 0; i < numEpochs; ++i)
     {
         LOG(INFO) << "====== BEGIN EPOCH " << i << " ======" << endl;
         size_t numCorrect = 0;
         size_t numTotal = 0;
         vector<float> errorAcc;
-        for (size_t j = 0; j < l_totalIters; ++j)
+        for (size_t j = 0; j < totalIters; ++j)
         {
-            // LOG(INFO) << "==Start GetNextBatch " << i << "," << j << " ==" << endl;
             // Get training example
             TMutableTensorPtr input, target;
             l_trainDataloader.GetNextBatch(input, target, batchSize);
@@ -151,11 +151,16 @@ int main(int argc, char const *argv[])
             secondLinearLayer.UpdateWeights(learningRate);
             firstLinearLayer.UpdateWeights(learningRate);
 
-            // Only log every 1000 examples
+            // Only log every 100 examples
             if (j % 100 == 0)
             {
                 float avgError = CalcAverage(errorAcc);
-                LOG(INFO) << "--ITER (" << i << "," << j << "/" << l_totalIters << ")-- avgError = " << avgError << " lr = " << learningRate << endl;
+                float accuracy = ((float) numCorrect / (float) numTotal) * 100;
+
+                LOG(INFO) << "--ITER (" << i << "," << j << "/" << totalIters 
+                          << ")-- avgError = " << avgError 
+                          << " avgAcc = " << accuracy 
+                          << " lr = " << learningRate << endl;
                 for (size_t k = 0; k < probs->Shape().at(1); ++k)
                 {
                     LOG(INFO) << "Output: " << probs->At({0, k}) << " Target " << target->At({0, k}) << endl;
@@ -169,9 +174,15 @@ int main(int argc, char const *argv[])
             }
         }
         float accuracy = ((float) numCorrect / (float) numTotal) * 100;
-        LOG(INFO) << "Train accuracy (" << i << ") " << numCorrect  << " / " << numTotal << " = " << accuracy << "%" << endl;
-        CalcAccuracy(firstLinearLayer, activationLayer, secondLinearLayer, softmaxLayer, l_testDataloader, batchSize);
-        // learningRate /= 2.0;
+        LOG(INFO) << "Train accuracy (" << i << ") " << numCorrect  << " / " << numTotal << " = " << accuracy << "%" << " last test acc: " << lastTestAcc << endl;
+        float testAccuracy = CalcAccuracy(firstLinearLayer, activationLayer, secondLinearLayer, softmaxLayer, l_testDataloader, batchSize);
+
+        if (i < 5 || (lastTestAcc+1.0 < testAccuracy))
+        {
+            learningRate /= 2.0;
+        }
+        
+        lastTestAcc = accuracy;
     }
 
     return 0;
