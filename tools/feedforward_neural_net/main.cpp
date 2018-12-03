@@ -61,9 +61,9 @@ float CalcAccuracy(
             ++numTotal;
         }
 
-        if (i % 100 == 0)
+        if (i % 10 == 0)
         {
-            LOG(INFO) << "Processing test set... " << i << endl;
+            LOG(INFO) << "Processing test set... " << numTotal << endl;
         }
     }
 
@@ -100,9 +100,9 @@ int main(int argc, char const *argv[])
     CrossEntropyLoss loss;
 
     // Training loop
-    float learningRate = 0.0003;
+    float learningRate = 0.0001;
     size_t numEpochs = 100;
-    size_t batchSize = 8;
+    size_t batchSize = 100;
     float lastTestAcc = 0.0;
 
     size_t totalIters = l_trainDataloader.GetNumBatches(batchSize);
@@ -177,10 +177,10 @@ int main(int argc, char const *argv[])
         LOG(INFO) << "Train accuracy (" << i << ") " << numCorrect  << " / " << numTotal << " = " << accuracy << "%" << " last test acc: " << lastTestAcc << endl;
         float testAccuracy = CalcAccuracy(firstLinearLayer, activationLayer, secondLinearLayer, softmaxLayer, l_testDataloader, batchSize);
 
-        if (i < 5 || (lastTestAcc+1.0 < testAccuracy))
-        {
-            learningRate /= 2.0;
-        }
+        // if (i < 5 || (lastTestAcc+1.0 < testAccuracy))
+        // {
+        //     learningRate /= 2.0;
+        // }
         
         lastTestAcc = accuracy;
     }
