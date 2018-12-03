@@ -1,8 +1,8 @@
-# Improving Our Neural Network Outputs With Softmax Classification
+# Using Mini Batches During Training
 
-How to predict probabilities from a linear layer, to achieve higher accuracy on the MNIST dataset.
+How to use mini batches to process more data at once
 
-Code to go along with blog: [Improving Our Neural Network Outputs With Softmax Classification](http://www.curiousinspiration.com/posts/improving-our-neural-network-outputs-with-softmax-classification)
+Code to go along with blog: [Using Mini Batches During Training](http://www.curiousinspiration.com/posts/using-mini-batches-during-training)
 
 # Build
 
