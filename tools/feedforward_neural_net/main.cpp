@@ -11,9 +11,10 @@
 #include "neural/loss/cross_entropy_loss.h"
 #include "neural/loss/mean_squared_error_loss.h"
 
+#include <glog/logging.h>
+#include <map>
 #include <math.h>
 
-#include <glog/logging.h>
 
 using namespace neural;
 using namespace std;
@@ -28,16 +29,56 @@ float CalcAverage(const vector<float>& vals)
     return sum / ((float)vals.size());
 }
 
-float CalcAccuracy(
+bool p_RowIsTruePositive(
+    size_t a_targetIdx, size_t a_predIdx,
+    float a_guessConfidence, float a_confidenceCutoff)
+{
+    return (a_targetIdx == a_predIdx) and (a_guessConfidence > a_confidenceCutoff);
+}
+
+bool p_RowIsFalsePositive(
+    size_t a_targetIdx, size_t a_predIdx,
+    float a_guessConfidence, float a_confidenceCutoff)
+{
+    return (a_targetIdx != a_predIdx) and (a_guessConfidence > a_confidenceCutoff);
+}
+
+bool p_RowIsTrueNegative(
+    size_t a_targetIdx, size_t a_predIdx,
+    float a_guessConfidence, float a_confidenceCutoff)
+{
+    return (a_targetIdx != a_predIdx) and (a_guessConfidence < a_confidenceCutoff);
+}
+
+bool p_RowIsFalseNegative(
+    size_t a_targetIdx, size_t a_predIdx,
+    float a_guessConfidence, float a_confidenceCutoff)
+{
+    return (a_targetIdx == a_predIdx) and (a_guessConfidence < a_confidenceCutoff);
+}
+
+map<string, float> CalcStatsAtConfidence(
     LinearLayer& a_firstLayer,
     ReLULayer& a_secondLayer,
     LinearLayer& a_thirdLayer,
     SoftmaxLayer& a_sofmaxLayer,
     MNISTDataloader& a_testDataloader,
-    size_t a_batchSize)
+    size_t a_batchSize,
+    vector<float> a_confidenceCutoffs)
 {
-    float numCorrect = 0.0;
-    float numTotal = 0.0;
+    LOG(INFO) << "Processing Test Set..." << endl;
+    vector<float> l_truePositives;
+    vector<float> l_trueNegatives;
+    vector<float> l_falsePositives;
+    vector<float> l_falseNegatives;
+    for (size_t i = 0; i < a_confidenceCutoffs.size(); ++i)
+    {
+        l_truePositives.push_back(0.0);
+        l_trueNegatives.push_back(0.0);
+        l_falsePositives.push_back(0.0);
+        l_falseNegatives.push_back(0.0);
+    }
+
     size_t totalIters = a_testDataloader.GetNumBatches(a_batchSize);
     for (size_t i = 0; i < totalIters; ++i)
     {
@@ -52,25 +93,63 @@ float CalcAccuracy(
 
         for (size_t j = 0; j < a_batchSize; ++j)
         {
-            size_t targetVal = target->GetRow(j)->MaxIdx();
-            size_t predVal = probs->GetRow(j)->MaxIdx();
-            if (predVal == targetVal)
-            {
-                ++numCorrect;
-            }
-            ++numTotal;
-        }
+            size_t l_targetIdx = target->GetRow(j)->MaxIdx();
+            size_t l_predIdx = probs->GetRow(j)->MaxIdx();
+            float l_predVal = probs->GetRow(j)->MaxVal();
 
-        if (i % 10 == 0)
-        {
-            LOG(INFO) << "Processing test set... " << numTotal << endl;
+            for (int k = 0; k < a_confidenceCutoffs.size(); ++k)
+            {
+                if (p_RowIsTruePositive(l_targetIdx, l_predIdx, l_predVal, a_confidenceCutoffs.at(k)))
+                {
+                    l_truePositives.at(k) += 1.0;
+                }
+
+                if (p_RowIsTrueNegative(l_targetIdx, l_predIdx, l_predVal, a_confidenceCutoffs.at(k)))
+                {
+                    l_trueNegatives.at(k) += 1.0;
+                }
+
+                if (p_RowIsFalsePositive(l_targetIdx, l_predIdx, l_predVal, a_confidenceCutoffs.at(k)))
+                {
+                    l_falsePositives.at(k) += 1.0;
+                }
+
+                if (p_RowIsFalseNegative(l_targetIdx, l_predIdx, l_predVal, a_confidenceCutoffs.at(k)))
+                {
+                    l_falseNegatives.at(k) += 1.0;
+                }
+            }
         }
     }
 
-    float l_accuracy = (numCorrect / numTotal) * 100;
-    LOG(INFO) << "Test accuracy = " << numCorrect << "/" << numTotal 
-              << " = " << l_accuracy << "%" << endl;
-    return l_accuracy;
+    for (int i = 0; i < a_confidenceCutoffs.size(); ++i)
+    {
+        float l_accuracy = (l_truePositives.at(i) + l_trueNegatives.at(i)) / (l_truePositives.at(i) + l_trueNegatives.at(i) + l_falsePositives.at(i) + l_falseNegatives.at(i));
+        l_accuracy *= 100;
+        float l_precision = (l_truePositives.at(i)) / (l_truePositives.at(i) + l_falsePositives.at(i));
+        l_precision *= 100;
+        float l_recall = (l_truePositives.at(i)) / (l_truePositives.at(i) + l_falseNegatives.at(i));
+        l_recall *= 100;
+        LOG(INFO) << "Test accuracy @" << a_confidenceCutoffs.at(i) << " = " << l_accuracy << "%" << endl;
+        LOG(INFO) << "Test precision @" 
+                  << a_confidenceCutoffs.at(i)
+                  << " = "
+                  << l_precision << "% = " 
+                  << l_truePositives.at(i) << " / (" 
+                  << l_truePositives.at(i) << " + " 
+                  << l_falsePositives.at(i) << ")"
+                  << endl;
+        LOG(INFO) << "Test recall @" 
+                  << a_confidenceCutoffs.at(i) 
+                  << " = " 
+                  << l_recall << "% = "
+                  << l_truePositives.at(i) << " / (" 
+                  << l_truePositives.at(i) << " + " 
+                  << l_falseNegatives.at(i) << ")"
+                  << endl;
+    }
+    
+    return map<string, float>({{"accuracy", 0.0}, {"precision", 0.0}, {"recall", 0.0}});
 }
 
 int main(int argc, char const *argv[])
@@ -101,7 +180,7 @@ int main(int argc, char const *argv[])
 
     // Training loop
     float learningRate = 0.0001;
-    size_t numEpochs = 100;
+    size_t numEpochs = 1000;
     size_t batchSize = 100;
     float lastTestAcc = 0.0;
 
@@ -163,7 +242,7 @@ int main(int argc, char const *argv[])
                           << " lr = " << learningRate << endl;
                 for (size_t k = 0; k < probs->Shape().at(1); ++k)
                 {
-                    LOG(INFO) << "Output: " << probs->At({0, k}) << " Target " << target->At({0, k}) << endl;
+                    LOG(INFO) << "Output [" << k << "] " << probs->At({0, k}) << " Target " << target->At({0, k}) << endl;
                 }
 
                 size_t targetVal = target->GetRow(0)->MaxIdx();
@@ -175,12 +254,14 @@ int main(int argc, char const *argv[])
         }
         float accuracy = ((float) numCorrect / (float) numTotal) * 100;
         LOG(INFO) << "Train accuracy (" << i << ") " << numCorrect  << " / " << numTotal << " = " << accuracy << "%" << " last test acc: " << lastTestAcc << endl;
-        float testAccuracy = CalcAccuracy(firstLinearLayer, activationLayer, secondLinearLayer, softmaxLayer, l_testDataloader, batchSize);
+        
+        vector<float> l_confidences = {0.1, 0.15, 0.25, 0.5, 0.75, 0.9};
+        CalcStatsAtConfidence(firstLinearLayer, activationLayer, secondLinearLayer, softmaxLayer, l_testDataloader, batchSize, l_confidences);
 
-        // if (i < 5 || (lastTestAcc+1.0 < testAccuracy))
-        // {
-        //     learningRate /= 2.0;
-        // }
+        if (i % 50 == 0 && i > 0)
+        {
+            learningRate *= 0.75;
+        }
         
         lastTestAcc = accuracy;
     }
