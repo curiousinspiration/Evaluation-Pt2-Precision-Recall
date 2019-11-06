@@ -15,17 +15,20 @@ namespace metrics
 
 class Recall : public Metric
 {
+
 public:
     Recall(size_t a_runningAvgLen = 1000);
+    virtual ~Recall() {};
 
     // name for logging / debugging
     virtual const std::string& GetName() const;
 
     // calculate the metric
     virtual float Calculate(float a_confidenceLevel = 0.5) const;
-private:
 
+private:
     static const std::string NAME;
+
 };
 
 } // namespace metric

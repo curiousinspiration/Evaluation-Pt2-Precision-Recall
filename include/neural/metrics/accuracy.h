@@ -15,8 +15,10 @@ namespace metrics
 
 class Accuracy : public Metric
 {
+
 public:
     Accuracy(size_t a_runningAvgLen = 1000);
+    virtual ~Accuracy() {};
 
     // name for logging / debugging
     virtual const std::string& GetName() const;
@@ -25,8 +27,8 @@ public:
     virtual float Calculate(float a_confidenceLevel = 0.0) const;
 
 private:
-
     static const std::string NAME;
+
 };
 
 } // namespace metric

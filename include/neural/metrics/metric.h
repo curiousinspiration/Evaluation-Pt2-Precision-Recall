@@ -20,6 +20,7 @@ namespace metrics
 
 class Metric
 {
+
 public:
     Metric(size_t a_runningAvgLen = 1000);
 
@@ -66,6 +67,7 @@ protected:
     bool p_ExampleIsFalseNegative(
         size_t a_targetIdx, size_t a_predIdx,
         float a_guessConfidence, float a_confidenceCutoff) const;
+
 };
 
 } // namespace metrics
