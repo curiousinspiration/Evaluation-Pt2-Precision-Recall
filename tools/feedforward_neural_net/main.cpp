@@ -29,28 +29,28 @@ float CalcAverage(const vector<float>& vals)
     return sum / ((float)vals.size());
 }
 
-bool p_RowIsTruePositive(
+bool p_ExampleIsTruePositive(
     size_t a_targetIdx, size_t a_predIdx,
     float a_guessConfidence, float a_confidenceCutoff)
 {
     return (a_targetIdx == a_predIdx) and (a_guessConfidence > a_confidenceCutoff);
 }
 
-bool p_RowIsFalsePositive(
+bool p_ExampleIsFalsePositive(
     size_t a_targetIdx, size_t a_predIdx,
     float a_guessConfidence, float a_confidenceCutoff)
 {
     return (a_targetIdx != a_predIdx) and (a_guessConfidence > a_confidenceCutoff);
 }
 
-bool p_RowIsTrueNegative(
+bool p_ExampleIsTrueNegative(
     size_t a_targetIdx, size_t a_predIdx,
     float a_guessConfidence, float a_confidenceCutoff)
 {
     return (a_targetIdx != a_predIdx) and (a_guessConfidence < a_confidenceCutoff);
 }
 
-bool p_RowIsFalseNegative(
+bool p_ExampleIsFalseNegative(
     size_t a_targetIdx, size_t a_predIdx,
     float a_guessConfidence, float a_confidenceCutoff)
 {
@@ -99,22 +99,22 @@ map<string, float> CalcStatsAtConfidence(
 
             for (int k = 0; k < a_confidenceCutoffs.size(); ++k)
             {
-                if (p_RowIsTruePositive(l_targetIdx, l_predIdx, l_predVal, a_confidenceCutoffs.at(k)))
+                if (p_ExampleIsTruePositive(l_targetIdx, l_predIdx, l_predVal, a_confidenceCutoffs.at(k)))
                 {
                     l_truePositives.at(k) += 1.0;
                 }
 
-                if (p_RowIsTrueNegative(l_targetIdx, l_predIdx, l_predVal, a_confidenceCutoffs.at(k)))
+                if (p_ExampleIsTrueNegative(l_targetIdx, l_predIdx, l_predVal, a_confidenceCutoffs.at(k)))
                 {
                     l_trueNegatives.at(k) += 1.0;
                 }
 
-                if (p_RowIsFalsePositive(l_targetIdx, l_predIdx, l_predVal, a_confidenceCutoffs.at(k)))
+                if (p_ExampleIsFalsePositive(l_targetIdx, l_predIdx, l_predVal, a_confidenceCutoffs.at(k)))
                 {
                     l_falsePositives.at(k) += 1.0;
                 }
 
-                if (p_RowIsFalseNegative(l_targetIdx, l_predIdx, l_predVal, a_confidenceCutoffs.at(k)))
+                if (p_ExampleIsFalseNegative(l_targetIdx, l_predIdx, l_predVal, a_confidenceCutoffs.at(k)))
                 {
                     l_falseNegatives.at(k) += 1.0;
                 }

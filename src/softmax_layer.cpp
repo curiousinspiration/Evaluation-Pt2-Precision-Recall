@@ -77,7 +77,7 @@ TTensorPtr SoftmaxLayer::Backward(
     // TODO: cache, not computationally efficient
     TTensorPtr l_outputs = Forward(a_origInput);
 
-    size_t x = l_outputs->Shape().at(0);
+    // size_t x = l_outputs->Shape().at(0);
     size_t y = l_outputs->Shape().at(1);
 
     TMutableTensorPtr l_grad = Tensor::New({y, y});
