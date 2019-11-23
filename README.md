@@ -1,8 +1,8 @@
-# Evaluation Pt 2: Precision, Recall, F1 Curves
+# Evaluation Pt 2: Precision, Recall Curves
 
 Gaining a better understanding of how well our network is performing
 
-Code to go along with blog: [Evaluation Pt 2: Precision, Recall, F1 Curves](http://www.curiousinspiration.com/posts/evaluation-pt-2:-precision,-recall,-f1-curves)
+Code to go along with blog: [Evaluation Pt 2: Precision, Recall Curves](http://www.curiousinspiration.com/posts/writing-the-code-for-precision-and-recall)
 
 # Build
 
