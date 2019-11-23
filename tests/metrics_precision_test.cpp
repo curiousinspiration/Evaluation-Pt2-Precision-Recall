@@ -13,12 +13,13 @@ using namespace std;
 // TEST(TestCaseName, IndividualTestName)
 TEST(StatsTest, TestMetricsPrecisionHighCutoff)
 {
+    float confidenceThreshold = 0.7;
     TTensorPtr l_outputs = Tensor::New({4, 3},
         {
-            0.75, 0.15, 0.1,
-            0.6, 0.2, 0.2,
-            0.1, 0.5, 0.4,
-            0.34, 0.33, 0.33
+            0.75, 0.15, 0.1, // tp, correct, and confidence is over 0.7
+            0.6, 0.2, 0.2,   // fn, incorrect, but our confidence was lower than the threshold
+            0.1, 0.5, 0.4,   // fn, incorrect, but our confidence was lower than the threshold
+            0.34, 0.33, 0.33 // tn, correct, but our confidence was too low
         });
 
     // precision = tp / (tp + fp)
@@ -26,7 +27,7 @@ TEST(StatsTest, TestMetricsPrecisionHighCutoff)
     TTensorPtr l_targets = Tensor::New({4, 3},
         {
             1, 0, 0, // tp
-            0, 1, 0, // fn
+            0, 1, 0, // tn
             0, 0, 1, // fn
             1, 0, 0  // tn
         });
@@ -34,7 +35,7 @@ TEST(StatsTest, TestMetricsPrecisionHighCutoff)
     metrics::Precision l_precision;
     l_precision.AddResults(l_outputs, l_targets);
 
-    EXPECT_NEAR(1.0, l_precision.Calculate(0.7), 0.001);
+    EXPECT_NEAR(1.0, l_precision.Calculate(confidenceThreshold), 0.001);
 }
 
 TEST(StatsTest, TestMetricsPrecisionMedCutoff)

@@ -5,8 +5,6 @@
 
 #include "neural/metrics/recall.h"
 
-#include <glog/logging.h>
-
 using namespace std;
 
 namespace neural

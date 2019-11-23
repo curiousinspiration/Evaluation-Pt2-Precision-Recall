@@ -21,10 +21,10 @@ public:
     virtual ~Precision() {};
 
     // name for logging / debugging
-    virtual const std::string& GetName() const;
+    virtual const std::string& GetName() const override;
 
     // calculate the metric
-    virtual float Calculate(float a_confidenceLevel = 0.5) const;
+    virtual float Calculate(float a_confidenceLevel = 0.5) const override;
 
 private:
     static const std::string NAME;

@@ -5,8 +5,6 @@
 
 #include "neural/metrics/precision.h"
 
-#include <glog/logging.h>
-
 using namespace std;
 
 namespace neural

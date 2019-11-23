@@ -5,8 +5,6 @@
 
 #include "neural/metrics/metric.h"
 
-#include <glog/logging.h>
-
 using namespace std;
 
 namespace neural
@@ -40,12 +38,16 @@ size_t Metric::p_IterAndCountWithFn(
     std::function<bool(size_t, size_t, float, float)> a_comparatorFn,
     float a_confidence) const
 {
+    // total number of occurences
     size_t l_retVal = 0;
+    // iterate over all results in the deque
     for (size_t i = 0; i < m_targets.size(); ++i)
     {
+        // get the result outputs, and targets
         const TTensorPtr& l_outputs = m_outputs.at(i);
         const TTensorPtr& l_targets = m_targets.at(i);
         
+        // remember, this is probably the output of a batch of predictions
         // iterate over rows in predictions / targets
         for (size_t j = 0; j < l_outputs->Shape().at(0); ++j)
         {
@@ -98,6 +100,7 @@ bool Metric::p_ExampleIsTruePositive(
     size_t a_targetIdx, size_t a_predIdx,
     float a_guessConfidence, float a_confidenceCutoff) const
 {
+    // correct, and above confidence threshold
     return (a_targetIdx == a_predIdx) and (a_guessConfidence > a_confidenceCutoff);
 }
 
@@ -105,6 +108,7 @@ bool Metric::p_ExampleIsFalsePositive(
     size_t a_targetIdx, size_t a_predIdx,
     float a_guessConfidence, float a_confidenceCutoff) const
 {
+    // incorrect, and above confidence threshold
     return (a_targetIdx != a_predIdx) and (a_guessConfidence > a_confidenceCutoff);
 }
 
@@ -112,6 +116,7 @@ bool Metric::p_ExampleIsTrueNegative(
     size_t a_targetIdx, size_t a_predIdx,
     float a_guessConfidence, float a_confidenceCutoff) const
 {
+    // incorrect, but below confidence threshold
     return (a_targetIdx != a_predIdx) and (a_guessConfidence < a_confidenceCutoff);
 }
 
@@ -119,9 +124,10 @@ bool Metric::p_ExampleIsFalseNegative(
     size_t a_targetIdx, size_t a_predIdx,
     float a_guessConfidence, float a_confidenceCutoff) const
 {
+    // correct, but below confidence threshol
     return (a_targetIdx == a_predIdx) and (a_guessConfidence < a_confidenceCutoff);
 }
 
-} // namespace metric
+} // namespace metrics
 
 } // namespace neural

@@ -47,13 +47,13 @@ protected:
         float a_confidence) const;
 
     size_t p_CalcNumTruePositives(
-        float a_confidenceLevel = 0.5) const;
+        float a_confidence) const;
     size_t p_CalcNumTrueNegatives(
-        float a_confidenceLevel = 0.5) const;
+        float a_confidence) const;
     size_t p_CalcNumFalsePositives(
-        float a_confidenceLevel = 0.5) const;
+        float a_confidence) const;
     size_t p_CalcNumFalseNegatives(
-        float a_confidenceLevel = 0.5) const;
+        float a_confidence) const;
 
     bool p_ExampleIsTruePositive(
         size_t a_targetIdx, size_t a_predIdx,

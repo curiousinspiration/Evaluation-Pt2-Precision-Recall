@@ -41,6 +41,7 @@ void RunOnTestSet(
     vector<float> a_confidenceCutoffs)
 {
     LOG(INFO) << "Processing Test Set..." << endl;
+    // instantiate the metrics we want to see
     vector<shared_ptr<metrics::Metric>> l_metrics = {
         shared_ptr<metrics::Metric>(new metrics::Precision()),
         shared_ptr<metrics::Metric>(new metrics::Recall())
